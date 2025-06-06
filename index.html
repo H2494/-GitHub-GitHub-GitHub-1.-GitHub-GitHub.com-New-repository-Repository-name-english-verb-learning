@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语动词变化背诵系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .verb-card {
+            border: 2px solid #e0e6ff;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .verb-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .verb-forms {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .verb-form {
+            text-align: center;
+            padding: 8px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .verb-form.original { color: #2563eb; }
+        .verb-form.past { color: #dc2626; }
+        .verb-form.participle { color: #059669; }
+
+        .chinese-meaning {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .example {
+            font-style: italic;
+            color: #888;
+            font-size: 0.85em;
+            border-left: 3px solid #667eea;
+            padding-left: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .quiz-card {
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .quiz-question {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #d73527;
+            font-weight: bold;
+        }
+
+        .quiz-input {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.1em;
+            margin: 10px;
+            width: 150px;
+            text-align: center;
+        }
+
+        .quiz-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .result {
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .correct { color: #059669; }
+        .incorrect { color: #dc2626; }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            height: 20px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+
+        .review-section {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .review-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 10px 0;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px;
+        }
+
+        .difficulty-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .easy { background: #10b981; color: white; }
+        .medium { background: #f59e0b; color: white; }
+        .hard { background: #ef4444; color: white; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 英语动词变化背诵系统</h1>
+            <p>基于记忆曲线的智能学习系统</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <span class="stat-number" id="currentDay">1</span>
+                <span>当前天数</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="learnedWords">0</span>
+                <span>已学单词</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="accuracy">0%</span>
+                <span>正确率</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="streak">0</span>
+                <span>连续天数</span>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%">
+                <span id="progressText">0/8</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="startNewDay()">开始新一天</button>
+            <button class="btn btn-secondary" onclick="startQuiz()">开始测试</button>
+            <button class="btn btn-success" onclick="showReview()">复习模式</button>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>📚 今日学习</h2>
+                <div id="todayWords"></div>
+            </div>
+
+            <div class="card">
+                <h2>🧠 智能测试</h2>
+                <div id="quizSection">
+                    <p style="text-align: center; color: #666;">点击"开始测试"开始练习</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="review-section" id="reviewSection" style="display: none;">
+            <h2 style="text-align: center; margin-bottom: 20px;">📖 复习中心</h2>
+            <div id="reviewContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // 动词数据库 - 按难度和常考程度分组
+        const verbDatabase = [
+            // 第1组 - 最基础常用动词
+            [
+                {original: "be", past: "was/were", participle: "been", chinese: "是，存在", example: "I am a student. 我是一名学生。"},
+                {original: "have", past: "had", participle: "had", chinese: "有，拥有", example: "She has a car. 她有一辆车。"},
+                {original: "do", past: "did", participle: "done", chinese: "做，干", example: "I do my homework. 我做作业。"},
+                {original: "go", past: "went", participle: "gone", chinese: "去，走", example: "Let's go home. 我们回家吧。"},
+                {original: "come", past: "came", participle: "come", chinese: "来，到达", example: "Come here please. 请过来。"},
+                {original: "get", past: "got", participle: "got/gotten", chinese: "得到，获得", example: "I got a gift. 我得到了礼物。"},
+                {original: "make", past: "made", participle: "made", chinese: "制作，使", example: "Make a cake. 做一个蛋糕。"},
+                {original: "take", past: "took", participle: "taken", chinese: "拿，取", example: "Take this book. 拿着这本书。"}
+            ],
+            // 第2组 - 常用动词
+            [
+                {original: "see", past: "saw", participle: "seen", chinese: "看见", example: "I saw him yesterday. 我昨天看见他了。"},
+                {original: "know", past: "knew", participle: "known", chinese: "知道，了解", example: "I know the answer. 我知道答案。"},
+                {original: "think", past: "thought", participle: "thought", chinese: "想，思考", example: "Think carefully. 仔细思考。"},
+                {original: "say", past: "said", participle: "said", chinese: "说", example: "What did you say? 你说什么？"},
+                {original: "tell", past: "told", participle: "told", chinese: "告诉", example: "Tell me the truth. 告诉我真相。"},
+                {original: "give", past: "gave", participle: "given", chinese: "给", example: "Give me a hand. 帮我一把。"},
+                {original: "find", past: "found", participle: "found", chinese: "找到，发现", example: "I found my keys. 我找到了钥匙。"},
+                {original: "feel", past: "felt", participle: "felt", chinese: "感觉", example: "I feel happy. 我感到快乐。"}
+            ],
+            // 第3组 - 动作动词
+            [
+                {original: "run", past: "ran", participle: "run", chinese: "跑", example: "Run fast! 跑快点！"},
+                {original: "walk", past: "walked", participle: "walked", chinese: "走", example: "Walk slowly. 慢慢走。"},
+                {original: "sit", past: "sat", participle: "sat", chinese: "坐", example: "Sit down please. 请坐下。"},
+                {original: "stand", past: "stood", participle: "stood", chinese: "站", example: "Stand up! 起立！"},
+                {original: "put", past: "put", participle: "put", chinese: "放，置", example: "Put it here. 把它放这里。"},
+                {original: "bring", past: "brought", participle: "brought", chinese: "带来", example: "Bring your book. 带上你的书。"},
+                {original: "buy", past: "bought", participle: "bought", chinese: "买", example: "Buy some milk. 买些牛奶。"},
+                {original: "eat", past: "ate", participle: "eaten", chinese: "吃", example: "Eat your dinner. 吃晚餐。"}
+            ],
+            // 第4组 - 学习工作相关
+            [
+                {original: "read", past: "read", participle: "read", chinese: "读", example: "Read this book. 读这本书。"},
+                {original: "write", past: "wrote", participle: "written", chinese: "写", example: "Write a letter. 写一封信。"},
+                {original: "learn", past: "learned/learnt", participle: "learned/learnt", chinese: "学习", example: "Learn English. 学英语。"},
+                {original: "teach", past: "taught", participle: "taught", chinese: "教", example: "Teach me math. 教我数学。"},
+                {original: "study", past: "studied", participle: "studied", chinese: "学习，研究", example: "Study hard. 努力学习。"},
+                {original: "work", past: "worked", participle: "worked", chinese: "工作", example: "Work together. 一起工作。"},
+                {original: "help", past: "helped", participle: "helped", chinese: "帮助", example: "Help each other. 互相帮助。"},
+                {original: "try", past: "tried", participle: "tried", chinese: "尝试", example: "Try your best. 尽力而为。"}
+            ],
+            // 第5组 - 情感表达
+            [
+                {original: "like", past: "liked", participle: "liked", chinese: "喜欢", example: "I like music. 我喜欢音乐。"},
+                {original: "love", past: "loved", participle: "loved", chinese: "爱", example: "Love your family. 爱你的家人。"},
+                {original: "want", past: "wanted", participle: "wanted", chinese: "想要", example: "I want water. 我想要水。"},
+                {original: "need", past: "needed", participle: "needed", chinese: "需要", example: "Need your help. 需要你的帮助。"},
+                {original: "hope", past: "hoped", participle: "hoped", chinese: "希望", example: "Hope for the best. 抱最好的希望。"},
+                {original: "wish", past: "wished", participle: "wished", chinese: "希望，祝愿", example: "Wish you luck. 祝你好运。"},
+                {original: "enjoy", past: "enjoyed", participle: "enjoyed", chinese: "享受", example: "Enjoy your meal. 用餐愉快。"},
+                {original: "miss", past: "missed", participle: "missed", chinese: "想念，错过", example: "Miss you so much. 非常想念你。"}
+            ],
+            // 第6组 - 生活动词
+            [
+                {original: "live", past: "lived", participle: "lived", chinese: "生活，居住", example: "Live in Beijing. 住在北京。"},
+                {original: "sleep", past: "slept", participle: "slept", chinese: "睡觉", example: "Sleep well. 睡个好觉。"},
+                {original: "wake", past: "woke", participle: "woken", chinese: "醒来", example: "Wake up early. 早起。"},
+                {original: "cook", past: "cooked", participle: "cooked", chinese: "做饭", example: "Cook dinner. 做晚饭。"},
+                {original: "clean", past: "cleaned", participle: "cleaned", chinese: "打扫", example: "Clean the room. 打扫房间。"},
+                {original: "wash", past: "washed", participle: "washed", chinese: "洗", example: "Wash your hands. 洗手。"},
+                {original: "drive", past: "drove", participle: "driven", chinese: "开车", example: "Drive carefully. 小心驾驶。"},
+                {original: "fly", past: "flew", participle: "flown", chinese: "飞", example: "Fly to Paris. 飞往巴黎。"}
+            ],
+            // 第7组 - 交流动词
+            [
+                {original: "speak", past: "spoke", participle: "spoken", chinese: "说话", example: "Speak Chinese. 说中文。"},
+                {original: "talk", past: "talked", participle: "talked", chinese: "谈话", example: "Talk to me. 和我说话。"},
+                {original: "listen", past: "listened", participle: "listened", chinese: "听", example: "Listen carefully. 仔细听。"},
+                {original: "hear", past: "heard", participle: "heard", chinese: "听见", example: "Hear the music. 听到音乐。"},
+                {original: "ask", past: "asked", participle: "asked", chinese: "问", example: "Ask a question. 问个问题。"},
+                {original: "answer", past: "answered", participle: "answered", chinese: "回答", example: "Answer me please. 请回答我。"},
+                {original: "call", past: "called", participle: "called", chinese: "打电话，叫", example: "Call me tonight. 今晚给我打电话。"},
+                {original: "meet", past: "met", participle: "met", chinese: "见面", example: "Meet at 5 PM. 下午5点见面。"}
+            ],
+            // 第8组 - 变化动词
+            [
+                {original: "become", past: "became", participle: "become", chinese: "变成", example: "Become a doctor. 成为医生。"},
+                {original: "grow", past: "grew", participle: "grown", chinese: "长大，成长", example: "Grow up fast. 快快长大。"},
+                {original: "change", past: "changed", participle: "changed", chinese: "改变", example: "Change your mind. 改变想法。"},
+                {original: "turn", past: "turned", participle: "turned", chinese: "转变", example: "Turn left here. 在这里左转。"},
+                {original: "open", past: "opened", participle: "opened", chinese: "打开", example: "Open the door. 开门。"},
+                {original: "close", past: "closed", participle: "closed", chinese: "关闭", example: "Close the window. 关窗户。"},
+                {original: "start", past: "started", participle: "started", chinese: "开始", example: "Start working. 开始工作。"},
+                {original: "stop", past: "stopped", participle: "stopped", chinese: "停止", example: "Stop talking. 停止说话。"}
+            ],
+            // 第9组 - 移动动词
+            [
+                {original: "move", past: "moved", participle: "moved", chinese: "移动", example: "Move forward. 向前移动。"},
+                {original: "carry", past: "carried", participle: "carried", chinese: "携带", example: "Carry the bag. 拎着包。"},
+                {original: "pull", past: "pulled", participle: "pulled", chinese: "拉", example: "Pull the rope. 拉绳子。"},
+                {original: "push", past: "pushed", participle: "pushed", chinese: "推", example: "Push the button. 按按钮。"},
+                {original: "throw", past: "threw", participle: "thrown", chinese: "投，扔", example: "Throw the ball. 扔球。"},
+                {original: "catch", past: "caught", participle: "caught", chinese: "抓住", example: "Catch the bus. 赶公交车。"},
+                {original: "hold", past: "held", participle: "held", chinese: "拿着，举行", example: "Hold my hand. 握着我的手。"},
+                {original: "drop", past: "dropped", participle: "dropped", chinese: "掉落", example: "Drop the ball. 把球掉了。"}
+            ],
+            // 第10组 - 高级动词
+            [
+                {original: "understand", past: "understood", participle: "understood", chinese: "理解", example: "Understand the lesson. 理解课程。"},
+                {original: "remember", past: "remembered", participle: "remembered", chinese: "记住", example: "Remember this day. 记住这一天。"},
+                {original: "forget", past: "forgot", participle: "forgotten", chinese: "忘记", example: "Don't forget me. 别忘了我。"},
+                {original: "choose", past: "chose", participle: "chosen", chinese: "选择", example: "Choose wisely. 明智地选择。"},
+                {original: "decide", past: "decided", participle: "decided", chinese: "决定", example: "Decide quickly. 快速决定。"},
+                {original: "believe", past: "believed", participle: "believed", chinese: "相信", example: "Believe in yourself. 相信自己。"},
+                {original: "win", past: "won", participle: "won", chinese: "赢得", example: "Win the game. 赢得比赛。"},
+                {original: "lose", past: "lost", participle: "lost", chinese: "失去，输", example: "Don't lose hope. 不要失去希望。"}
+            ]
+        ];
+
+        // 学习数据存储
+        let learningData = {
+            currentDay: 1,
+            learnedWords: 0,
+            totalCorrect: 0,
+            totalQuestions: 0,
+            streak: 0,
+            lastStudyDate: null,
+            wordProgress: {}, // 每个单词的掌握程度
+            reviewSchedule: {} // 复习计划
+        };
+
+        // 当前学习状态
+        let currentQuiz = null;
+        let currentWordSet = [];
+
+        // 初始化
+        function init() {
+            loadLearningData();
+            updateStats();
+            loadTodayWords();
+        }
+
+        // 加载学习数据
+        function loadLearningData() {
+            const saved = localStorage.getItem('verbLearningData');
+            if (saved) {
+                learningData = {...learningData, ...JSON.parse(saved)};
+            }
+        }
+
+        // 保存学习数据
+        function saveLearningData() {
+            localStorage.setItem('verbLearningData', JSON.stringify(learningData));
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            document.getElementById('currentDay').textContent = learningData.currentDay;
+            document.getElementById('learnedWords').textContent = learningData.learnedWords;
+            
+            const accuracy = learningData.totalQuestions > 0 
+                ? Math.round((learningData.totalCorrect / learningData.totalQuestions) * 100)
+                : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('streak').textContent = learningData.streak;
+        }
+
+        // 开始新一天
+        function startNewDay() {
+            const today = new Date().toDateString();
+            if (learningData.lastStudyDate !== today) {
+                learningData.lastStudyDate = today;
+                learningData.streak++;
+                saveLearningData();
+            }
+            loadTodayWords();
+            updateProgress();
+        }
+
+        // 加载今日单词
+        function loadTodayWords() {
+            const dayIndex = (learningData.currentDay - 1) % verbDatabase.length;
+            currentWordSet = verbDatabase[dayIndex];
+            
+            const container = document.getElementById('todayWords');
+            container.innerHTML = '';
+            
+            currentWordSet.forEach((verb, index) => {
+                const verbCard = createVerbCard(verb, index);
+                container.appendChild(verbCard);
+            });
+            
+            updateProgress();
+        }
+
+        // 创建动词卡片
+        function createVerbCard(verb, index) {
+            const card = document.createElement('div');
+            card.className = 'verb-card';
+            card.innerHTML = `
+                <div class="verb-forms">
+                    <div class="verb-form original">${verb.original}</div>
+                    <div class="verb-form past">${verb.past}</div>
+                    <div class="verb-form participle">${verb.participle}</div>
+                </div>
+                <div class="chinese-meaning">${verb.chinese}</div>
+                <div class="example">${verb.example}</div>
+            `;
+            
+            // 添加点击效果
+            card.addEventListener('click', () => {
+                card.classList.add('pulse');
+                setTimeout(() => card.classList.remove('pulse'), 1000);
+                
+                // 标记为已学习
+                if (!learningData.wordProgress[verb.original]) {
+                    learningData.wordProgress[verb.original] = {
+                        learned: true,
+                        lastReview: new Date().toISOString(),
+                        strength: 1
+                    };
+                    learningData.learnedWords++;
+                    updateStats();
+                    updateProgress();
+                    saveLearningData();
+                }
+            });
+            
+            return card;
+        }
+
+        // 更新进度条
+        function updateProgress() {
+            const learnedToday = currentWordSet.filter(verb => 
+                learningData.wordProgress[verb.original]?.learned
+            ).length;
+            
+            const percentage = (learnedToday / currentWordSet.length) * 100;
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            progressFill.style.width = percentage + '%';
+            progressText.textContent = `${learnedToday}/${currentWordSet.length}`;
+            
+            if (learnedToday === currentWordSet.length) {
+                progressText.textContent = '今日完成！';
+                setTimeout(() => {
+                    if (confirm('今日学习完成！是否进入下一天？')) {
+                        learningData.currentDay++;
+                        saveLearningData();
+                        updateStats();
+                        loadTodayWords();
+                    }
+                }, 500);
+            }
+        }
+
+        // 开始测试
+        function startQuiz() {
+            const learnedVerbs = currentWordSet.filter(verb => 
+                learningData.wordProgress[verb.original]?.learned
+            );
+            
+            if (learnedVerbs.length === 0) {
+                alert('请先学习今日单词！');
+                return;
+            }
+            
+            currentQuiz = learnedVerbs[Math.floor(Math.random() * learnedVerbs.length)];
+            showQuizQuestion();
+        }
+
+        // 显示测试题目
+        function showQuizQuestion() {
+            const quizSection = document.getElementById('quizSection');
+            const questionTypes = ['past', 'participle', 'chinese'];
+            const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+            
+            let questionText = '';
+            let correctAnswer = '';
+            
+            if (questionType === 'past') {
+                questionText = `"${currentQuiz.original}" 的过去式是？`;
+                correctAnswer = currentQuiz.past;
+            } else if (questionType === 'participle') {
+                questionText = `"${currentQuiz.original}" 的过去分词是？`;
+                correctAnswer = currentQuiz.participle;
+            } else {
+                questionText = `"${currentQuiz.original}" 的中文意思是？`;
+                correctAnswer = currentQuiz.chinese;
+            }
+            
+            quizSection.innerHTML = `
+                <div class="quiz-card">
+                    <div class="quiz-question">${questionText}</div>
+                    <input type="text" class="quiz-input" id="quizInput" placeholder="输入答案">
+                    <br>
+                    <button class="btn btn-primary" onclick="checkAnswer('${correctAnswer}', '${questionType}')">提交答案</button>
+                    <div id="quizResult"></div>
+                </div>
+            `;
